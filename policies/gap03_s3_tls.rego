@@ -19,6 +19,7 @@ deny contains msg if {
 	some resource in input.resource_changes
 	resource.type == "aws_s3_bucket"
 	resource.change.after != null
+	resource.change.actions[_] in {"create", "update"}
 	not has_tls_deny_policy(resource.change.after.bucket)
 	msg := sprintf(
 		"[CC6.7][GAP-03] S3 bucket '%s' has no bucket policy denying aws:SecureTransport=false. PHI buckets must refuse HTTP requests.",

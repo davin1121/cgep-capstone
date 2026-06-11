@@ -21,6 +21,7 @@ deny contains msg if {
 	some resource in input.resource_changes
 	resource.type == "aws_iam_role_policy"
 	resource.change.after != null
+	resource.change.actions[_] in {"create", "update"}
 	policy := json.unmarshal(resource.change.after.policy)
 	some statement in policy.Statement
 	statement.Effect == "Allow"

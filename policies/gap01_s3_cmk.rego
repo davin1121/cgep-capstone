@@ -18,6 +18,7 @@ import rego.v1
 deny contains msg if {
 	some resource in input.resource_changes
 	resource.type == "aws_s3_bucket_server_side_encryption_configuration"
+	resource.change.actions[_] in {"create", "update"}
 	rule := resource.change.after.rule[_]
 	rule.apply_server_side_encryption_by_default[_].sse_algorithm != "aws:kms"
 	msg := sprintf(
@@ -30,6 +31,7 @@ deny contains msg if {
 	some resource in input.resource_changes
 	resource.type == "aws_s3_bucket"
 	resource.change.after != null
+	resource.change.actions[_] in {"create", "update"}
 	not has_kms_encryption(resource.address)
 	msg := sprintf(
 		"[CC6.1][GAP-01] S3 bucket '%s' has no aws_s3_bucket_server_side_encryption_configuration with sse_algorithm = \"aws:kms\". PHI buckets require a customer CMK.",

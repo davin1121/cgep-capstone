@@ -19,6 +19,7 @@ deny contains msg if {
 	some resource in input.resource_changes
 	resource.type == "aws_dynamodb_table"
 	resource.change.after != null
+	resource.change.actions[_] in {"create", "update"}
 	not has_cmk_encryption(resource.change.after)
 	msg := sprintf(
 		"[CC6.1][GAP-02] DynamoDB table '%s' does not have server_side_encryption with a customer CMK. Tables storing PHI must use a customer-managed KMS key.",

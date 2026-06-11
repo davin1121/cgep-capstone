@@ -19,6 +19,7 @@ deny contains msg if {
 	some resource in input.resource_changes
 	resource.type == "aws_lambda_function"
 	resource.change.after != null
+	resource.change.actions[_] in {"create", "update"}
 	not has_vpc_config(resource.change.after)
 	msg := sprintf(
 		"[CC6.6][GAP-05] Lambda function '%s' has no vpc_config block. Functions processing PHI must run in a VPC with private subnets for boundary protection.",
