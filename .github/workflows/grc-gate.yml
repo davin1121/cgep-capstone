@@ -70,10 +70,18 @@ jobs:
             --format pretty \
             'data.compliance' | tee /tmp/policy-results.txt
 
-          # Fail if any deny rules fired
-          if grep -q '"deny"' /tmp/policy-results.txt && \
-             ! grep -q '"deny": \[\]' /tmp/policy-results.txt; then
-            echo "POLICY GATE FAILED — one or more controls violated"
+          # Count all deny messages across every policy package
+          VIOLATIONS=$(opa eval \
+            --input terraform/tfplan.json \
+            --data policies \
+            --format raw \
+            'count([msg | msg := data.compliance[_][_].deny[_]])' \
+            | tr -d '[:space:]')
+
+          echo "Total policy violations: $VIOLATIONS"
+
+          if [ "$VIOLATIONS" -gt 0 ]; then
+            echo "POLICY GATE FAILED — $VIOLATIONS violation(s) detected"
             exit 1
           fi
           echo "POLICY GATE PASSED"
