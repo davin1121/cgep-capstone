@@ -364,7 +364,7 @@ resource "aws_iam_role_policy" "lambda_least_privilege" {
         Sid    = "DynamoDBLeastPrivilege"
         Effect = "Allow"
         Action = [
-          "dynamodb:*",
+          "dynamodb:PutItem",
           "dynamodb:GetItem",
           "dynamodb:UpdateItem",
           "dynamodb:Query"
