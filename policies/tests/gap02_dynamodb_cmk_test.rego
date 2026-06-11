@@ -8,7 +8,7 @@ test_dynamodb_with_cmk_passes if {
 		"resource_changes": [{
 			"address": "aws_dynamodb_table.intake_cmk",
 			"type": "aws_dynamodb_table",
-			"change": {"after": {"server_side_encryption": [{"enabled": true, "kms_key_arn": "arn:aws:kms:us-east-1:123:key/abc"}]}},
+			"change": {"actions": ["create"], "after": {"server_side_encryption": [{"enabled": true, "kms_key_arn": "arn:aws:kms:us-east-1:123:key/abc"}]}},
 		}],
 	}
 }
@@ -19,7 +19,7 @@ test_dynamodb_no_encryption_denied if {
 		"resource_changes": [{
 			"address": "aws_dynamodb_table.intake",
 			"type": "aws_dynamodb_table",
-			"change": {"after": {"server_side_encryption": []}},
+			"change": {"actions": ["create"], "after": {"server_side_encryption": []}},
 		}],
 	}
 }
@@ -30,7 +30,7 @@ test_dynamodb_no_cmk_arn_denied if {
 		"resource_changes": [{
 			"address": "aws_dynamodb_table.intake",
 			"type": "aws_dynamodb_table",
-			"change": {"after": {"server_side_encryption": [{"enabled": true, "kms_key_arn": null}]}},
+			"change": {"actions": ["create"], "after": {"server_side_encryption": [{"enabled": true, "kms_key_arn": null}]}},
 		}],
 	}
 }

@@ -8,7 +8,7 @@ test_specific_actions_pass if {
 		"resource_changes": [{
 			"address": "aws_iam_role_policy.lambda_least_privilege",
 			"type": "aws_iam_role_policy",
-			"change": {"after": {"policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:PutItem\",\"dynamodb:GetItem\"],\"Resource\":\"*\"}]}"}},
+			"change": {"actions": ["create"], "after": {"policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:PutItem\",\"dynamodb:GetItem\"],\"Resource\":\"*\"}]}"}},
 		}],
 	}
 }
@@ -19,7 +19,7 @@ test_dynamodb_wildcard_denied if {
 		"resource_changes": [{
 			"address": "aws_iam_role_policy.lambda_inline",
 			"type": "aws_iam_role_policy",
-			"change": {"after": {"policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"dynamodb:*\",\"Resource\":\"*\"}]}"}},
+			"change": {"actions": ["create"], "after": {"policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"dynamodb:*\",\"Resource\":\"*\"}]}"}},
 		}],
 	}
 }
@@ -30,7 +30,7 @@ test_s3_wildcard_denied if {
 		"resource_changes": [{
 			"address": "aws_iam_role_policy.lambda_inline",
 			"type": "aws_iam_role_policy",
-			"change": {"after": {"policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"s3:*\",\"Resource\":\"*\"}]}"}},
+			"change": {"actions": ["create"], "after": {"policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"s3:*\",\"Resource\":\"*\"}]}"}},
 		}],
 	}
 }

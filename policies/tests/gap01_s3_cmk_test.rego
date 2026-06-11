@@ -8,7 +8,7 @@ test_s3_with_kms_passes if {
 		"resource_changes": [{
 			"address": "aws_s3_bucket_server_side_encryption_configuration.uploads",
 			"type": "aws_s3_bucket_server_side_encryption_configuration",
-			"change": {"after": {"rule": [{"apply_server_side_encryption_by_default": [{"sse_algorithm": "aws:kms", "kms_master_key_id": "arn:aws:kms:us-east-1:123:key/abc"}]}]}},
+			"change": {"actions": ["create"], "after": {"rule": [{"apply_server_side_encryption_by_default": [{"sse_algorithm": "aws:kms", "kms_master_key_id": "arn:aws:kms:us-east-1:123:key/abc"}]}]}},
 		}],
 	}
 }
@@ -19,7 +19,7 @@ test_s3_with_sse_s3_denied if {
 		"resource_changes": [{
 			"address": "aws_s3_bucket_server_side_encryption_configuration.uploads",
 			"type": "aws_s3_bucket_server_side_encryption_configuration",
-			"change": {"after": {"rule": [{"apply_server_side_encryption_by_default": [{"sse_algorithm": "AES256"}]}]}},
+			"change": {"actions": ["create"], "after": {"rule": [{"apply_server_side_encryption_by_default": [{"sse_algorithm": "AES256"}]}]}},
 		}],
 	}
 }

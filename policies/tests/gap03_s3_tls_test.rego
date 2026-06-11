@@ -9,7 +9,7 @@ test_s3_with_tls_deny_passes if {
 			{
 				"address": "aws_s3_bucket.uploads",
 				"type": "aws_s3_bucket",
-				"change": {"after": {"bucket": "my-bucket"}},
+				"change": {"actions": ["create"], "after": {"bucket": "my-bucket"}},
 			},
 			{
 				"address": "aws_s3_bucket_policy.uploads",
@@ -29,7 +29,7 @@ test_s3_no_policy_denied if {
 		"resource_changes": [{
 			"address": "aws_s3_bucket.uploads",
 			"type": "aws_s3_bucket",
-			"change": {"after": {"bucket": "my-bucket-no-policy"}},
+			"change": {"actions": ["create"], "after": {"bucket": "my-bucket-no-policy"}},
 		}],
 	}
 }

@@ -1,0 +1,155 @@
+{
+  "component-definition": {
+    "uuid": "a4f3e2b1-8c7d-4e9f-b2a1-3d5e6f7a8b9c",
+    "metadata": {
+      "title": "Acme Health Patient Intake API — GRC Baseline",
+      "last-modified": "2026-06-11T00:00:00Z",
+      "version": "1.0.0",
+      "oscal-version": "1.1.2",
+      "remarks": "Component definition mapping the capstone GRC baseline controls to NIST SP 800-53 Rev 5 and SOC 2 TSC. Primary framework is SOC 2 Type II. NIST controls are used as the underlying catalog because SOC 2 TSC maps directly to them and OSCAL has a published NIST 800-53 catalog."
+    },
+    "components": [
+      {
+        "uuid": "b5c4d3e2-9f8e-4d7c-a3b2-4e5f6a7b8c9d",
+        "type": "software",
+        "title": "Acme Health Patient Intake Lambda",
+        "description": "AWS Lambda function that accepts patient intake submissions via API Gateway, writes to DynamoDB, and stores attachments in S3. Processes PHI. Deployed in a VPC with private subnets.",
+        "control-implementations": [
+          {
+            "uuid": "c6d5e4f3-a9b8-4c7d-b4c3-5e6f7a8b9c0d",
+            "source": "https://raw.githubusercontent.com/usnistgov/oscal-content/main/nist.gov/SP800-53/rev5/json/NIST_SP-800-53_rev5_catalog.json",
+            "description": "NIST SP 800-53 Rev 5 controls implemented by the Acme Health intake workload GRC baseline. SOC 2 TSC cross-references are noted in each requirement.",
+            "implemented-requirements": [
+              {
+                "uuid": "d7e6f5a4-b0c9-4d8e-c5d4-6f7a8b9c0d1e",
+                "control-id": "sc-28",
+                "description": "Protection of Information at Rest (SOC 2 CC6.1). SSE-KMS with customer CMK alias/acme-health-intake-phi is applied to aws_s3_bucket.uploads and aws_dynamodb_table.intake_cmk. Key rotation is enabled (enable_key_rotation=true). GAP-01 and GAP-02 are closed by module.baseline.aws_kms_key.phi and the server_side_encryption block on the CMK DynamoDB table.",
+                "props": [
+                  { "name": "implementation-status", "value": "implemented" },
+                  { "name": "soc2-tsc", "value": "CC6.1" },
+                  { "name": "gap", "value": "GAP-01, GAP-02" },
+                  { "name": "terraform-resource", "value": "module.baseline.aws_kms_key.phi" }
+                ],
+                "links": [
+                  {
+                    "rel": "evidence",
+                    "href": "s3://acme-health-intake-evidence-vault-316391d2/runs/latest/receipt.json",
+                    "text": "Signed pipeline evidence bundle containing tfplan.json showing SSE-KMS configuration on uploads bucket and CMK DynamoDB table."
+                  }
+                ]
+              },
+              {
+                "uuid": "e8f7a6b5-c1d0-4e9f-d6e5-7a8b9c0d1e2f",
+                "control-id": "cc-6.7",
+                "description": "Transmission Integrity and Confidentiality (SOC 2 CC6.7). S3 bucket policy on aws_s3_bucket.uploads denies all requests where aws:SecureTransport=false. This ensures PHI attachments cannot be transmitted over HTTP. GAP-03 is closed by module.baseline.aws_s3_bucket_policy.uploads.",
+                "props": [
+                  { "name": "implementation-status", "value": "implemented" },
+                  { "name": "soc2-tsc", "value": "CC6.7" },
+                  { "name": "gap", "value": "GAP-03" },
+                  { "name": "terraform-resource", "value": "module.baseline.aws_s3_bucket_policy.uploads" }
+                ],
+                "links": [
+                  {
+                    "rel": "evidence",
+                    "href": "s3://acme-health-intake-evidence-vault-316391d2/runs/latest/tfplan.json",
+                    "text": "tfplan.json showing DenyNonTLS bucket policy statement on uploads bucket."
+                  }
+                ]
+              },
+              {
+                "uuid": "f9a8b7c6-d2e1-4f0a-e7f6-8b9c0d1e2f3a",
+                "control-id": "sc-7",
+                "description": "Boundary Protection (SOC 2 CC6.6). aws_lambda_function.intake is deployed with vpc_config referencing private subnets subnet-0d26c2347d18ee4d8 and subnet-00f6b54aa65e638bc. Egress is restricted to HTTPS (port 443) only via aws_security_group.lambda. VPC Gateway endpoints for DynamoDB and S3 prevent data from traversing the public internet. GAP-05 is closed.",
+                "props": [
+                  { "name": "implementation-status", "value": "implemented" },
+                  { "name": "soc2-tsc", "value": "CC6.6" },
+                  { "name": "gap", "value": "GAP-05" },
+                  { "name": "terraform-resource", "value": "module.baseline.aws_security_group.lambda" }
+                ],
+                "links": [
+                  {
+                    "rel": "evidence",
+                    "href": "s3://acme-health-intake-evidence-vault-316391d2/runs/latest/tfplan.json",
+                    "text": "tfplan.json showing vpc_config block on Lambda with private subnet IDs and security group."
+                  }
+                ]
+              },
+              {
+                "uuid": "a0b9c8d7-e3f2-4a1b-f8a7-9c0d1e2f3a4b",
+                "control-id": "si-7",
+                "description": "Software, Firmware, and Information Integrity — Monitoring (SOC 2 CC7.2). X-Ray active tracing is enabled on the Lambda (tracing_config.mode=Active). Failed async invocations route to SQS DLQ acme-health-intake-dlq-316391d2 for visibility. API Gateway access logs are written to CloudWatch log group /aws/apigateway/acme-health-intake-316391d2 with 90-day retention. GAP-06 and GAP-08 are closed.",
+                "props": [
+                  { "name": "implementation-status", "value": "implemented" },
+                  { "name": "soc2-tsc", "value": "CC7.2" },
+                  { "name": "gap", "value": "GAP-06, GAP-08" },
+                  { "name": "terraform-resource", "value": "module.baseline.aws_sqs_queue.lambda_dlq" }
+                ],
+                "links": [
+                  {
+                    "rel": "evidence",
+                    "href": "s3://acme-health-intake-evidence-vault-316391d2/runs/latest/tfplan.json",
+                    "text": "tfplan.json showing X-Ray tracing_config, DLQ destination_config, and API GW access_log_settings."
+                  }
+                ]
+              },
+              {
+                "uuid": "b1c0d9e8-f4a3-4b2c-a9b8-0d1e2f3a4b5c",
+                "control-id": "ac-6",
+                "description": "Least Privilege (SOC 2 CC6.3). aws_iam_role_policy.lambda_least_privilege replaces the original wildcard policy (dynamodb:*, s3:*) with specific actions: dynamodb:PutItem, GetItem, UpdateItem, Query on the intake table; s3:PutObject, GetObject on the uploads bucket prefix. GAP-07 is closed. The Rego policy gap07_iam_least_privilege.rego detects any future regression to wildcard actions at plan time.",
+                "props": [
+                  { "name": "implementation-status", "value": "implemented" },
+                  { "name": "soc2-tsc", "value": "CC6.3" },
+                  { "name": "gap", "value": "GAP-07" },
+                  { "name": "terraform-resource", "value": "aws_iam_role_policy.lambda_least_privilege" }
+                ],
+                "links": [
+                  {
+                    "rel": "evidence",
+                    "href": "s3://acme-health-intake-evidence-vault-316391d2/runs/latest/policy-results.txt",
+                    "text": "OPA policy evaluation output confirming gap07_iam_least_privilege deny is empty on the compliant plan."
+                  }
+                ]
+              },
+              {
+                "uuid": "c2d1e0f9-a5b4-4c3d-b0c9-1e2f3a4b5c6d",
+                "control-id": "au-2",
+                "description": "Audit Record Generation (SOC 2 CC7.2). AWS CloudTrail trail acme-health-intake-mgmt is multi-region, includes global service events, and has log file validation enabled. Trail logs are encrypted with the PHI CMK and stored in S3 bucket acme-health-intake-cloudtrail-316391d2. This ensures all AWS API calls are recorded with tamper-evident SHA-256 digests.",
+                "props": [
+                  { "name": "implementation-status", "value": "implemented" },
+                  { "name": "soc2-tsc", "value": "CC7.2" },
+                  { "name": "gap", "value": "GAP-08 (partial)" },
+                  { "name": "terraform-resource", "value": "module.baseline.aws_cloudtrail.mgmt" }
+                ],
+                "links": [
+                  {
+                    "rel": "evidence",
+                    "href": "s3://acme-health-intake-evidence-vault-316391d2/runs/latest/tfplan.json",
+                    "text": "tfplan.json showing CloudTrail resource with enable_log_file_validation=true and kms_key_id."
+                  }
+                ]
+              },
+              {
+                "uuid": "d3e2f1a0-b6c5-4d4e-c1d0-2f3a4b5c6d7e",
+                "control-id": "a-1.2",
+                "description": "Availability — Data Recovery (SOC 2 A1.2). Versioning is enabled on aws_s3_bucket.uploads, preventing PHI overwrites from being unrecoverable. Point-in-time recovery is available for any overwritten object. GAP-04 is closed by module.baseline.aws_s3_bucket_versioning.uploads.",
+                "props": [
+                  { "name": "implementation-status", "value": "implemented" },
+                  { "name": "soc2-tsc", "value": "A1.2" },
+                  { "name": "gap", "value": "GAP-04" },
+                  { "name": "terraform-resource", "value": "module.baseline.aws_s3_bucket_versioning.uploads" }
+                ],
+                "links": [
+                  {
+                    "rel": "evidence",
+                    "href": "s3://acme-health-intake-evidence-vault-316391d2/runs/latest/tfplan.json",
+                    "text": "tfplan.json showing versioning_configuration status=Enabled on uploads bucket."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "profile": {
+    "uuid": "e4f3a2b1-c7d6-4e5f-d2e1-3f4a5b6c7d8e",
+    "metadata": {
+      "title": "Acme Health Minimum Security Baseline — SOC 2 TSC mapped to NIST 800-53 Rev 5",
+      "last-modified": "2026-06-11T00:00:00Z",
+      "version": "1.0.0",
+      "oscal-version": "1.1.2",
+      "remarks": "This profile selects the subset of NIST SP 800-53 Rev 5 controls that map to the SOC 2 Trust Services Criteria (TSC) addressed by the capstone GRC baseline. Controls are selected by their NIST ID; SOC 2 TSC cross-references are in the component definition."
+    },
+    "imports": [
+      {
+        "href": "https://raw.githubusercontent.com/usnistgov/oscal-content/main/nist.gov/SP800-53/rev5/json/NIST_SP-800-53_rev5_catalog.json",
+        "include-controls": [
+          {
+            "with-ids": [
+              "sc-28",
+              "sc-7",
+              "si-7",
+              "ac-6",
+              "au-2",
+              "au-9"
+            ]
+          }
+        ]
+      }
+    ],
+    "merge": {
+      "as-is": true
+    },
+    "modify": {
+      "set-parameters": [
+        {
+          "param-id": "sc-28_prm_1",
+          "values": ["PHI at rest in S3 and DynamoDB"]
+        },
+        {
+          "param-id": "ac-6_prm_1",
+          "values": ["Lambda execution role for patient intake processing"]
+        }
+      ]
+    }
+  }
+}

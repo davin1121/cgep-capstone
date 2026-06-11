@@ -8,7 +8,7 @@ test_lambda_in_vpc_passes if {
 		"resource_changes": [{
 			"address": "aws_lambda_function.intake",
 			"type": "aws_lambda_function",
-			"change": {"after": {"vpc_config": [{"subnet_ids": ["subnet-abc", "subnet-def"], "security_group_ids": ["sg-abc"]}]}},
+			"change": {"actions": ["create"], "after": {"vpc_config": [{"subnet_ids": ["subnet-abc", "subnet-def"], "security_group_ids": ["sg-abc"]}]}},
 		}],
 	}
 }
@@ -19,7 +19,7 @@ test_lambda_no_vpc_denied if {
 		"resource_changes": [{
 			"address": "aws_lambda_function.intake",
 			"type": "aws_lambda_function",
-			"change": {"after": {"vpc_config": []}},
+			"change": {"actions": ["create"], "after": {"vpc_config": []}},
 		}],
 	}
 }
@@ -30,7 +30,7 @@ test_lambda_empty_subnets_denied if {
 		"resource_changes": [{
 			"address": "aws_lambda_function.intake",
 			"type": "aws_lambda_function",
-			"change": {"after": {"vpc_config": [{"subnet_ids": [], "security_group_ids": ["sg-abc"]}]}},
+			"change": {"actions": ["create"], "after": {"vpc_config": [{"subnet_ids": [], "security_group_ids": ["sg-abc"]}]}},
 		}],
 	}
 }
