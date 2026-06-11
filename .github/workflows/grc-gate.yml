@@ -86,6 +86,7 @@ jobs:
 
       # ── Step 4: Bundle and sign evidence ──────────────────────────
       - name: Bundle evidence
+        id: bundle
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
           BUNDLE="evidence-${{ github.run_id }}-${{ github.sha }}.tar.gz"
@@ -96,33 +97,34 @@ jobs:
           echo "${{ github.run_id }}" > bundle/run-id.txt
           tar -czf "$BUNDLE" -C bundle .
           sha256sum "$BUNDLE" > "${BUNDLE}.sha256"
-          echo "BUNDLE=$BUNDLE" >> $GITHUB_ENV
+          echo "name=$BUNDLE" >> $GITHUB_OUTPUT
 
       - name: Sign bundle with Cosign (keyless)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
+          BUNDLE="${{ steps.bundle.outputs.name }}"
           cosign sign-blob \
             --yes \
-            --bundle="${{ env.BUNDLE }}.sig.bundle" \
-            "${{ env.BUNDLE }}"
+            --bundle="${BUNDLE}.sig.bundle" \
+            "$BUNDLE"
 
       # ── Step 5: Upload to evidence vault ──────────────────────────
       - name: Upload to evidence vault
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
+          BUNDLE="${{ steps.bundle.outputs.name }}"
           RUN_PATH="s3://${{ secrets.EVIDENCE_VAULT }}/runs/${{ github.run_id }}"
-          aws s3 cp "${{ env.BUNDLE }}"            "${RUN_PATH}/${{ env.BUNDLE }}"
-          aws s3 cp "${{ env.BUNDLE }}.sha256"     "${RUN_PATH}/${{ env.BUNDLE }}.sha256"
-          aws s3 cp "${{ env.BUNDLE }}.sig.bundle" "${RUN_PATH}/${{ env.BUNDLE }}.sig.bundle"
+          aws s3 cp "$BUNDLE"            "${RUN_PATH}/$BUNDLE"
+          aws s3 cp "${BUNDLE}.sha256"   "${RUN_PATH}/${BUNDLE}.sha256"
+          aws s3 cp "${BUNDLE}.sig.bundle" "${RUN_PATH}/${BUNDLE}.sig.bundle"
 
-          # Write receipt
           cat > receipt.json <<EOF
           {
             "run_id": "${{ github.run_id }}",
             "sha": "${{ github.sha }}",
             "ref": "${{ github.ref }}",
             "actor": "${{ github.actor }}",
-            "bundle": "${{ env.BUNDLE }}",
+            "bundle": "$BUNDLE",
             "vault": "${{ secrets.EVIDENCE_VAULT }}",
             "uploaded_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           }
