@@ -1,6 +1,6 @@
-# cgep-capstone — Acme Health Patient Intake API GRC Baseline
+# cgep-capstone: Acme Health Patient Intake API GRC Baseline
 
-> SOC 2 Type II GRC baseline for the Acme Health Patient Intake API. Built on the `cgep-app-starter` workload.
+> SOC 2 Type II GRC baseline for the Acme Health Patient Intake API, built on the `cgep-app-starter` workload.
 
 [![GRC Gate](https://github.com/davin1121/cgep-capstone/actions/workflows/grc-gate.yml/badge.svg)](https://github.com/davin1121/cgep-capstone/actions/workflows/grc-gate.yml)
 
@@ -10,10 +10,10 @@ This repository wraps the deliberately non-compliant `cgep-app-starter` workload
 
 | Layer | What | Where |
 |---|---|---|
-| **1 — Terraform baseline** | KMS CMK, S3 evidence vault (Object Lock), CloudTrail, Lambda VPC + SG + DLQ, API GW logging, least-privilege IAM | `terraform/baseline/` |
-| **2 — Rego policy suite** | 5 OPA policies covering GAP-01/02/03/05/07, 13 unit tests | `policies/` |
-| **3 — GitHub Actions pipeline** | Plan → Policy gate → Apply → Cosign sign → vault upload | `.github/workflows/grc-gate.yml` |
-| **4 — OSCAL component** | Component definition + profile (NIST 800-53 Rev 5 mapped to SOC 2 TSC) | `oscal/` |
+| **1 - Terraform baseline** | KMS CMK, S3 evidence vault (Object Lock), CloudTrail, Lambda VPC + SG + DLQ, API GW logging, least-privilege IAM | `terraform/baseline/` |
+| **2 - Rego policy suite** | 5 OPA policies covering GAP-01/02/03/05/07, 13 unit tests | `policies/` |
+| **3 - GitHub Actions pipeline** | Plan > Policy gate > Apply > Cosign sign > vault upload | `.github/workflows/grc-gate.yml` |
+| **4 - OSCAL component** | Component definition + profile (NIST 800-53 Rev 5 mapped to SOC 2 TSC) | `oscal/` |
 
 **Primary framework:** SOC 2 Type II (Trust Services Criteria)
 **NIST catalog:** SP 800-53 Rev 5 (used as OSCAL catalog source)

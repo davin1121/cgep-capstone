@@ -1,5 +1,4 @@
-# Capstone Writeup
-## Acme Health Patient Intake API — GRC Baseline
+# Capstone Writeup: Acme Health Patient Intake API GRC Baseline
 
 ---
 
@@ -10,7 +9,7 @@ The three candidate frameworks were HIPAA Security Rule, SOC 2 Trust Services Cr
 **I selected SOC 2 Type II as the primary framework** for the following reasons:
 
 - **Business driver**: The immediate driver is enterprise customer trust. A customer has asked for a SOC 2 report before signing. HIPAA is a legal floor, not a competitive differentiator at this stage. SOC 2 is what closes deals.
-- **Scope fit**: SOC 2 TSC (CC6.x, CC7.x, A1.x) maps directly to the gaps in the starter workload — encryption at rest (CC6.1), transmission security (CC6.7), boundary protection (CC6.6), least privilege (CC6.3), and monitoring (CC7.2). Every gap had a clear TSC home.
+- **Scope fit**: SOC 2 TSC (CC6.x, CC7.x, A1.x) maps directly to the gaps in the starter workload: encryption at rest (CC6.1), transmission security (CC6.7), boundary protection (CC6.6), least privilege (CC6.3), and monitoring (CC7.2). Every gap had a clear TSC home.
 - **CMMC exclusion**: CMMC Level 2 applies to DoD contractors handling CUI. Acme Health has no current federal contracts. Implementing CMMC would add compliance overhead with no near-term return.
 - **HIPAA cross-reference**: HIPAA Technical Safeguard controls (164.312) are satisfied by the same remediations that close SOC 2 gaps. This is documented in `GAPS.md`. HIPAA is addressed as a byproduct, not a separate workstream.
 
@@ -39,7 +38,7 @@ All 8 gaps from `GAPS.md` were addressed. The table below summarizes each gap, t
 
 ### Object Lock Mode: GOVERNANCE vs COMPLIANCE
 
-The evidence vault uses `GOVERNANCE` mode with 90-day retention. **COMPLIANCE mode** would be stronger — it cannot be overridden by anyone, including account root, and requires AWS Support to remove. However:
+The evidence vault uses `GOVERNANCE` mode with 90-day retention. COMPLIANCE mode would be stronger since it cannot be overridden by anyone including account root, and requires AWS Support to remove. That said:
 
 - This is a lab environment. COMPLIANCE mode would prevent cleanup at the end of the lab period without opening an AWS Support ticket.
 - In a production engagement, COMPLIANCE mode is the correct choice for evidence that must be tamper-proof for audit periods (typically 1 year for SOC 2).
@@ -49,7 +48,7 @@ The evidence vault uses `GOVERNANCE` mode with 90-day retention. **COMPLIANCE mo
 
 ### Terraform State: Remote S3 Backend
 
-Terraform state is stored in `acme-health-intake-tfstate-316391d2` with versioning enabled. This was required for the CI/CD pipeline to share state with local development runs. State is not encrypted with a CMK in this implementation — a production hardening would add KMS encryption on the state bucket and DynamoDB locking.
+Terraform state is stored in `acme-health-intake-tfstate-316391d2` with versioning enabled. This was needed so the CI/CD pipeline and local dev runs share the same state. The state bucket is not encrypted with a CMK here, but a production setup would add KMS encryption and DynamoDB locking.
 
 ### GAP-02 Design: New Table vs In-Place Modification
 
@@ -59,7 +58,7 @@ DynamoDB does not support changing the encryption key on an existing table. The 
 
 The pipeline applies automatically on merge to `main`. A manual gate between plan and apply would satisfy a Change Advisory Board (CAB) process common in regulated enterprises. This was omitted because:
 
-1. The policy gate (Conftest) is the primary control — it runs pre-merge on every PR.
+1. The policy gate (Conftest) is the primary control and runs pre-merge on every PR.
 2. Adding a manual gate without also enforcing branch protection and required reviews creates a false sense of control.
 
 **Production recommendation**: Enable required reviewers on `main`, enforce the policy gate as a required status check, and add a manual approval job between plan and apply for production environment changes.
@@ -68,7 +67,7 @@ The pipeline applies automatically on merge to `main`. A manual gate between pla
 
 The `aws_iam_role_policy.github_actions` policy uses broad permissions (`ec2:*`, `lambda:*`, `iam:*`) to allow the pipeline to run full Terraform applies. This policy itself triggers the `gap07` Rego rule. The policy is scoped to the pipeline role only, not the Lambda execution role.
 
-**This is a known and accepted trade-off**: CI/CD pipelines that manage infrastructure require broad permissions to function. The mitigation is the OIDC trust condition (`StringLike: repo:davin1121/cgep-capstone:*`) which restricts assumption to only this specific repository. In a production environment, permissions would be further scoped to specific resource ARNs using Terraform `for_each` outputs.
+This is a known trade-off. CI/CD pipelines that manage infrastructure need broad permissions to work. The OIDC trust condition (`StringLike: repo:davin1121/cgep-capstone:*`) limits role assumption to this specific repo only. In production, permissions would be scoped down to specific resource ARNs.
 
 ---
 
@@ -76,11 +75,11 @@ The `aws_iam_role_policy.github_actions` policy uses broad permissions (`ec2:*`,
 
 | Item | Risk | Recommended Remediation |
 |---|---|---|
-| `aws_dynamodb_table.intake` uses AWS-owned key | Medium — existing data not under CMK | Blue/green table migration with Lambda env var cutover |
-| `github_actions` role uses broad IAM permissions | Low — scoped to this repo via OIDC | Scope to specific resource ARNs post-capstone |
-| Evidence vault uses GOVERNANCE not COMPLIANCE Object Lock | Low — lab environment | Switch to COMPLIANCE mode before first audit window |
-| API Gateway WAF not implemented | Medium — no L7 protection | Add `aws_wafv2_web_acl` association in a follow-on sprint |
-| No patient data lifecycle policy | Medium — HIPAA right-of-access, GDPR erasure | Implement DynamoDB TTL and S3 lifecycle rules |
+| `aws_dynamodb_table.intake` uses AWS-owned key | Medium - existing data not under CMK | Blue/green table migration with Lambda env var cutover |
+| `github_actions` role uses broad IAM permissions | Low - scoped to this repo via OIDC | Scope to specific resource ARNs post-capstone |
+| Evidence vault uses GOVERNANCE not COMPLIANCE Object Lock | Low - lab environment | Switch to COMPLIANCE mode before first audit window |
+| API Gateway WAF not implemented | Medium - no L7 protection | Add `aws_wafv2_web_acl` association in a follow-on sprint |
+| No patient data lifecycle policy | Medium - HIPAA right-of-access, GDPR erasure | Implement DynamoDB TTL and S3 lifecycle rules |
 | Terraform state bucket unencrypted with CMK | Low | Add KMS encryption + DynamoDB state locking |
 
 ---
@@ -103,7 +102,7 @@ The vault bucket has Object Lock (GOVERNANCE, 90 days) preventing deletion. The 
 3. Verify with `cosign verify-blob --bundle <sig.bundle> <bundle.tar.gz>` against the Sigstore Rekor transparency log
 4. Confirm the `tfplan.json` inside shows the expected control configurations
 
-This constitutes a cryptographically verifiable chain of custody from code commit to infrastructure state.
+The result is a cryptographically verifiable chain of custody from code commit to infrastructure state.
 
 ---
 
